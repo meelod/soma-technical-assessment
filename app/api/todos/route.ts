@@ -24,6 +24,10 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc',
       },
+      include: {
+        dependsOn: { include: { dependency: true } },
+        dependedBy: { include: { dependent: true } },
+      },
     });
     return NextResponse.json(todos);
   } catch (error) {
