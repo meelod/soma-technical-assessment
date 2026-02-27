@@ -49,6 +49,8 @@ Implement a task dependency system that allows tasks to depend on other tasks. T
 ## Solution
 
 ![Solution Screenshot](screenshots/solution.png)
+<img width="1160" height="582" alt="image" src="https://github.com/user-attachments/assets/3532dbb4-0c45-47e5-95a4-402f5489a5b6" />
+
 
 ### Part 1: Due Dates
 
