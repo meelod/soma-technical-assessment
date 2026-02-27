@@ -46,9 +46,61 @@ Implement a task dependency system that allows tasks to depend on other tasks. T
 4. Calculate the earliest possible start date for each task based on its dependencies
 5. Visualize the dependency graph
 
+## Solution
+
+![Solution Screenshot](screenshots/solution.png)
+
+### Part 1: Due Dates
+
+Added an optional due date picker to the todo creation form. Due dates are stored in the database and displayed on each todo card. Overdue dates are highlighted in red.
+
+- **Schema**: Added `dueDate DateTime?` to the `Todo` model
+- **API**: POST accepts an optional `dueDate`, converts to `Date` or `null`
+- **UI**: Date input in the creation form, formatted display on each card, red styling for overdue items
+
+### Part 2: Image Generation
+
+Each new todo automatically fetches a relevant image from the Pexels API based on the task title. Images are fetched once at creation time and the URL is stored in the database.
+
+- **Schema**: Added `imageUrl String?` to the `Todo` model
+- **API**: POST handler calls Pexels search API with the todo title, stores the first result's medium image URL
+- **Image Proxy**: Pexels blocks browser hotlinking, so images are served through a server-side proxy route (`/api/image-proxy`) that fetches from Pexels and pipes the bytes back to the client
+
+### Part 3: Task Dependencies
+
+Implemented a full dependency system with circular dependency prevention, critical path analysis, and a canvas-based dependency graph.
+
+- **Data Model**: A `Dependency` join table with `dependentId`/`dependencyId` foreign keys, unique constraint, and cascade deletes
+- **Dependency API** (`/api/todos/[id]/dependencies`): POST to add a dependency (with DFS cycle detection), DELETE to remove one
+- **Critical Path API** (`/api/todos/critical-path`): Topological sort via Kahn's algorithm, forward pass for earliest start/finish, backward pass to identify the critical path (zero-slack nodes)
+- **UI**: "Deps" button on the creation form to select dependencies, link icon on each card to add/remove dependencies on existing todos, orange "Critical Path" badge on critical tasks
+- **Graph**: Canvas-based visualization with layered topological layout, bezier curve edges, orange highlighting for critical path nodes and edges, HiDPI/Retina support
+
+### Project Structure
+
+```
+components/          — Reusable UI components
+  TodoApp.tsx        — Page-level composition
+  TodoForm.tsx       — Creation form with date + dependency picker
+  TodoItem.tsx       — Individual todo card
+  DependencyGraph.tsx — Canvas-based graph visualization
+hooks/
+  useTodos.ts        — Custom hook for all todo state and API calls
+app/api/             — API routes with Prisma
+  todos/route.ts     — GET/POST todos
+  todos/[id]/route.ts — DELETE todo
+  todos/[id]/dependencies/route.ts — POST/DELETE dependencies
+  todos/critical-path/route.ts — GET critical path analysis
+  image-proxy/route.ts — Server-side image proxy for Pexels
+lib/
+  prisma.ts          — Prisma client singleton
+prisma/
+  schema.prisma      — Database schema
+```
+
 ## Submission:
 
-1. Add a new "Solution" section to this README with a description and screenshot or recording of your solution. 
+1. Add a new "Solution" section to this README with a description and screenshot or recording of your solution.
 2. Push your changes to a public GitHub repository.
 3. Submit a link to your repository in the application form.
 
